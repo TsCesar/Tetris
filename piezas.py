@@ -1,104 +1,96 @@
 import pygame
 import random
 
-# Tamaño de la cuadrícula
-COLUMNAS = 10
-FILAS = 20
+# Definición de colores
+COLORES = [
+    (0, 255, 255),  # Cyan - I
+    (0, 0, 255),    # Azul - J
+    (255, 165, 0),  # Naranja - L
+    (255, 255, 0),  # Amarillo - O
+    (0, 255, 0),    # Verde - S
+    (128, 0, 128),  # Morado - T
+    (255, 0, 0)     # Rojo - Z
+]
 
-# Colores de las piezas
-COLORES = {
-    "I": (0, 255, 255),
-    "J": (0, 0, 255),
-    "L": (255, 165, 0),
-    "O": (255, 255, 0),
-    "S": (0, 255, 0),
-    "T": (128, 0, 128),
-    "Z": (255, 0, 0)
-}
-
-# Definir las formas de las piezas
-PIEZAS = {
-    "I": [[1, 1, 1, 1]],
-    "J": [[1, 0, 0], [1, 1, 1]],
-    "L": [[0, 0, 1], [1, 1, 1]],
-    "O": [[1, 1], [1, 1]],
-    "S": [[0, 1, 1], [1, 1, 0]],
-    "T": [[0, 1, 0], [1, 1, 1]],
-    "Z": [[1, 1, 0], [0, 1, 1]]
-}
-
+# Definición de las formas de las piezas
+FORMAS = [
+    [[(0, -1), (0, 0), (0, 1), (0, 2)]],  # I
+    [[(0, -1), (0, 0), (0, 1), (-1, 1)]],  # J
+    [[(0, -1), (0, 0), (0, 1), (1, 1)]],  # L
+    [[(0, 0), (0, 1), (1, 0), (1, 1)]],  # O
+    [[(0, 0), (1, 0), (0, 1), (-1, 1)]],  # S
+    [[(0, -1), (0, 0), (0, 1), (1, 0)]],  # T
+    [[(0, 0), (-1, 0), (0, 1), (1, 1)]]   # Z
+]
 
 class Pieza:
     def __init__(self):
-        """Inicializa una nueva pieza aleatoria en el centro de la cuadrícula."""
-        self.tipo = random.choice(list(PIEZAS.keys()))
-        self.forma = PIEZAS[self.tipo]
+        """Inicializa una nueva pieza en la parte superior del tablero."""
+        self.tipo = random.randint(0, len(FORMAS) - 1)
+        self.forma = FORMAS[self.tipo][0]
         self.color = COLORES[self.tipo]
-        self.x = COLUMNAS // 2 - len(self.forma[0]) // 2  # Centrada horizontalmente
-        self.y = 0  # Aparece arriba
-        self.velocidad_caida = 0.5
-        self.tiempo_acumulado = 0
-
-    def mover(self, dx):
-        """Mueve la pieza horizontalmente sin salirse del tablero."""
-        nueva_x = self.x + dx
-        if 0 <= nueva_x <= COLUMNAS - len(self.forma[0]):
-            self.x = nueva_x
-
-    def rotar(self):
-        """Rota la pieza en sentido horario sin salirse del tablero."""
-        nueva_forma = list(zip(*self.forma[::-1]))  # Rotación 90° (transpuesta + invertir filas)
-        nueva_forma = [list(row) for row in nueva_forma]  # Convertir de nuevo a lista de listas
-        ancho_pieza = len(nueva_forma[0])
-
-        # Ajustar si se sale del tablero
-        if self.x + ancho_pieza > COLUMNAS:
-            self.x = COLUMNAS - ancho_pieza
-
-        self.forma = nueva_forma
-
-    def mover_abajo(self, tablero):
-        """Mueve la pieza hacia abajo si es posible. 
-        Si no puede moverse más, devuelve False para indicar que debe fijarse.
-        """
-        for i, fila in enumerate(self.forma):
-            for j, celda in enumerate(fila):
-                if celda:
-                    nueva_y = self.y + i + 1
-                    if nueva_y >= FILAS or tablero[nueva_y][self.x + j] is not None:
-                        return False  # Ha llegado al final o choca con otra pieza
-
-        self.y += 1  # Mueve la pieza una fila abajo
-        return True
-
-    def actualizar(self, dt, tablero):
-        """Mueve la pieza hacia abajo de forma automática."""
-        self.tiempo_acumulado += dt
-        if self.tiempo_acumulado >= self.velocidad_caida:
-            if not self.mover_abajo(tablero):  # Si no puede moverse más, se debe fijar
-                return False
-            self.tiempo_acumulado = 0
-        return True
+        self.x = 5  # Columna inicial
+        self.y = 0  # Fila inicial
 
     def obtener_posiciones(self):
-        """Devuelve las coordenadas ocupadas por la pieza en la cuadrícula."""
-        posiciones = []
-        for i, fila in enumerate(self.forma):
-            for j, celda in enumerate(fila):
-                if celda:
-                    posiciones.append((self.x + j, self.y + i))
-        return posiciones
+        """Devuelve las posiciones ocupadas por la pieza en el tablero."""
+        return [(self.x + dx, self.y + dy) for dx, dy in self.forma]
 
-    def dibujar(self, pantalla, TAMANO_CELDA):
-        """Dibuja la pieza en su posición dentro del tablero."""
-        ancho, alto = pantalla.get_size()
+    def colisiona(self, tablero, nueva_x, nueva_y, nueva_forma=None):
+        """Comprueba si la pieza colisiona con los bordes o piezas fijas."""
+        if nueva_forma is None:
+            nueva_forma = self.forma
+
+        for dx, dy in nueva_forma:
+            x = nueva_x + dx
+            y = nueva_y + dy
+
+            if x < 0 or x >= 10 or y >= 20:
+                return True
+            if y >= 0 and tablero[y][x] is not None:
+                return True
+
+        return False
+
+    def mover(self, dx, tablero):
+        """Mueve la pieza a la izquierda o derecha si es posible."""
+        nueva_x = self.x + dx
+        if not self.colisiona(tablero, nueva_x, self.y):
+            self.x = nueva_x
+
+    def mover_abajo(self, tablero):
+        """Mueve la pieza hacia abajo, devolviendo False si toca el suelo."""
+        nueva_y = self.y + 1
+        if not self.colisiona(tablero, self.x, nueva_y):
+            self.y = nueva_y
+            return True
+        return False
+
+    def rotar(self, tablero):
+        """Rota la pieza si no colisiona."""
+        nueva_forma = [(dy, -dx) for dx, dy in self.forma]  # Matriz de rotación 90°
+        if not self.colisiona(tablero, self.x, self.y, nueva_forma):
+            self.forma = nueva_forma
+
+    def dibujar(self, ventana, TAMANO_CELDA):
+        """Dibuja la pieza en la pantalla con una cuadrícula dentro de cada bloque."""
+        ancho, alto = ventana.get_size()
+
+        COLUMNAS = 10
+        FILAS = 20
+
         x_inicio = (ancho - COLUMNAS * TAMANO_CELDA) // 2
         y_inicio = (alto - FILAS * TAMANO_CELDA) // 2
 
-        for i, fila in enumerate(self.forma):
-            for j, celda in enumerate(fila):
-                if celda:
-                    x_pix = x_inicio + (self.x + j) * TAMANO_CELDA
-                    y_pix = y_inicio + (self.y + i) * TAMANO_CELDA
-                    pygame.draw.rect(pantalla, self.color, (x_pix, y_pix, TAMANO_CELDA, TAMANO_CELDA))
-                    pygame.draw.rect(pantalla, (0, 0, 0), (x_pix, y_pix, TAMANO_CELDA, TAMANO_CELDA), 2)  # Contorno
+        for dx, dy in self.forma:  # ← Aquí recorremos las posiciones relativas correctas
+            x_pix = x_inicio + (self.x + dx) * TAMANO_CELDA
+            y_pix = y_inicio + (self.y + dy) * TAMANO_CELDA
+
+            pygame.draw.rect(ventana, self.color, (x_pix, y_pix, TAMANO_CELDA, TAMANO_CELDA))
+
+            # Dibujar líneas negras dentro del bloque para el efecto de cuadrícula
+            borde = 2
+            pygame.draw.line(ventana, (0, 0, 0), (x_pix, y_pix), (x_pix + TAMANO_CELDA, y_pix), borde)  # Superior
+            pygame.draw.line(ventana, (0, 0, 0), (x_pix, y_pix), (x_pix, y_pix + TAMANO_CELDA), borde)  # Izquierda
+            pygame.draw.line(ventana, (0, 0, 0), (x_pix + TAMANO_CELDA, y_pix), (x_pix + TAMANO_CELDA, y_pix + TAMANO_CELDA), borde)  # Derecha
+            pygame.draw.line(ventana, (0, 0, 0), (x_pix, y_pix + TAMANO_CELDA), (x_pix + TAMANO_CELDA, y_pix + TAMANO_CELDA), borde)  # Inferior
