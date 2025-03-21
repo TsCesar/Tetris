@@ -43,20 +43,20 @@
 ---
 
 ## 🤓 Créditos
--Este proyecto fue creado con 💙 por César.
--Inspirado en el clásico Tetris, pero con un toque personal y muchas líneas que eliminar. 😎
+- Este proyecto fue creado con 💙 por César.
+- Inspirado en el clásico Tetris, pero con un toque personal y muchas líneas que eliminar. 😎
 
 ## 📌 ¿Ideas o bugs?
--¡Las sugerencias, pull requests y issues son más que bienvenidas!
--Tu feedback ayuda a que el juego sea más divertido para todos. ✨
+- ¡Las sugerencias, pull requests y issues son más que bienvenidas!
+- Tu feedback ayuda a que el juego sea más divertido para todos. ✨
 
 ## 🕹️ Próximamente...
--🎭 Modo multijugador local
--🧨 Power-ups aleatorios
--🧱 Nuevas formas de fichas
--🌐 Versión web con PyScript
+- 🎭 Modo multijugador local
+- 🧨 Power-ups aleatorios
+- 🧱 Nuevas formas de fichas
+- 🌐 Versión web con PyScript
 
 ## ⭐ Si te gustó...
--¡No olvides dejar una estrella ⭐ en el repo!
--Así sabré que debo seguir mejorándolo 🚀
+- ¡No olvides dejar una estrella ⭐ en el repo!
+- Así sabré que debo seguir mejorándolo 🚀
 
