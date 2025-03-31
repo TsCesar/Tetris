@@ -26,7 +26,7 @@
 
 - Python 3
 - Pygame
-- 💡 (Opcional) SQLite para guardar puntuaciones
+- JSON para guardar puntuaciones
 
 ---
 
